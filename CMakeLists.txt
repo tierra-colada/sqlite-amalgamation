@@ -38,7 +38,12 @@ endif()
 #------------------------------------------------------------------------------
 
 # SQLite3 as static or shared library:
-if(SQLITE_BUILD_SHARED)
+if(SQLITE_BUILD_SHARED OR BUILD_SHARED_LIBS)
+    # on Windows 'SQLITE_BUILD_SHARED' and `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS`
+    # are needed to create '.lib' library in SHARED mode
+    set(SQLITE_BUILD_SHARED TRUE)
+    set(BUILD_SHARED_LIBS TRUE)
+    set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
     add_library(${PROJECT_NAME} SHARED sqlite3.c)
 else()
     add_library(${PROJECT_NAME} STATIC sqlite3.c)
@@ -100,6 +105,7 @@ configure_file(sqlite3_config.h.in ${CMAKE_BINARY_DIR}/sqlite3_config.h)
 install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Config
     ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME       DESTINATION ${CMAKE_INSTALL_BINDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
 install(EXPORT  ${PROJECT_NAME}Config
@@ -117,7 +123,7 @@ if(BUILD_SHELL)
     add_executable(shell_app shell.c)
     set_target_properties(shell_app PROPERTIES OUTPUT_NAME sqlite3)
     target_link_libraries(shell_app PRIVATE ${PROJECT_NAME})
-    if(SQLITE_ENABLE_MATH_FUNCTIONS)
+    if(NOT WIN32 AND SQLITE_ENABLE_MATH_FUNCTIONS)
         # math (<math.h>) requires additional library to link 'libm'
         target_link_libraries(shell_app PRIVATE m)
     endif()
