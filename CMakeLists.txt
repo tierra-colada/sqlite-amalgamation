@@ -120,6 +120,9 @@ install(FILES
 # SQLite3 shell application:
 option(BUILD_SHELL "build SQLite3 shell application" OFF)
 if(BUILD_SHELL)
+    # add path to shared lib to RPATH so that you don't need to modify LD_LIBRARY_PATH 
+    # when launching 'sqlite3' on UNIX platforms (must be before exe target is created)
+    list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
     add_executable(shell_app shell.c)
     set_target_properties(shell_app PROPERTIES OUTPUT_NAME sqlite3)
     target_link_libraries(shell_app PRIVATE ${PROJECT_NAME})
