@@ -117,8 +117,11 @@ if(BUILD_SHELL)
     add_executable(shell_app shell.c)
     set_target_properties(shell_app PROPERTIES OUTPUT_NAME sqlite3)
     target_link_libraries(shell_app PRIVATE ${PROJECT_NAME})
+    if(SQLITE_ENABLE_MATH_FUNCTIONS)
+        # math (<math.h>) requires additional library to link 'libm'
+        target_link_libraries(shell_app PRIVATE m)
+    endif()
     if(UNIX)
-    message("CMAKE_STRIP: ${CMAKE_STRIP}")
         if(CMAKE_BUILD_TYPE STREQUAL Release)
             add_custom_command(TARGET shell_app POST_BUILD
                 COMMAND ${CMAKE_STRIP} sqlite3
