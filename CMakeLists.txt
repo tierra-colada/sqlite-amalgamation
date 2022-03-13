@@ -23,6 +23,7 @@ option(SQLITE_OMIT_DECLTYPE          "omit declared type of columns"            
 option(SQLITE_OMIT_JSON              "disables JSON SQL functions"                     OFF)
 option(SQLITE_RECOMMENDED_OPTIONS    "compile by SQLite3 recommended options"          ON)
 option(SQLITE_USE_URI                "enables the default URI filename processing"     OFF)
+option(SQLITE_BUILD_SHARED           "build as SHARED library"                         OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Release or Debug?" FORCE)
@@ -36,11 +37,15 @@ endif()
 
 #------------------------------------------------------------------------------
 
-# SQLite3 as static library:
-add_library(${PROJECT_NAME} STATIC sqlite3.c)
+# SQLite3 as static or shared library:
+if(SQLITE_BUILD_SHARED)
+    add_library(${PROJECT_NAME} SHARED sqlite3.c)
+else()
+    add_library(${PROJECT_NAME} STATIC sqlite3.c)
+endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
     OUTPUT_NAME   sqlite3
-    PUBLIC_HEADER sqlite3.h
+    PUBLIC_HEADER "sqlite3.h;sqlite3ext.h"
     DEBUG_POSTFIX d
     )
 target_include_directories(${PROJECT_NAME} PUBLIC $<INSTALL_INTERFACE:include>)
@@ -113,6 +118,7 @@ if(BUILD_SHELL)
     set_target_properties(shell_app PROPERTIES OUTPUT_NAME sqlite3)
     target_link_libraries(shell_app PRIVATE ${PROJECT_NAME})
     if(UNIX)
+    message("CMAKE_STRIP: ${CMAKE_STRIP}")
         if(CMAKE_BUILD_TYPE STREQUAL Release)
             add_custom_command(TARGET shell_app POST_BUILD
                 COMMAND ${CMAKE_STRIP} sqlite3
