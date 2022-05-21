@@ -135,7 +135,12 @@ if(BUILD_SHELL)
     if(UNIX)
         add_custom_command(
             TARGET shell_app POST_BUILD
-            COMMAND $<$<CONFIG:release>:${CMAKE_STRIP} sqlite3>)
+            COMMAND "$<$<CONFIG:Release>:${CMAKE_STRIP}>" "$<$<CONFIG:Release>:$<TARGET_FILE:shell_app>>")
+        if(CMAKE_BUILD_TYPE STREQUAL Release)
+            add_custom_command(TARGET shell_app POST_BUILD
+                COMMAND ${CMAKE_STRIP} sqlite3
+                )
+        endif()
     elseif(MSVC)
         option(BUILD_SHELL_STATIC "build shell by static c/c++ runtime" ON)
         foreach(flag CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_DEBUG)
